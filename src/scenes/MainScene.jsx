@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Matter from "matter-js";
 
+
 const STATIC_DENSITY = 15;
 const PARTICLE_SIZE = 6;
 const PARTICLE_BOUNCYNESS = 0.9;
@@ -10,6 +11,7 @@ const MainScene = () => {
   const canvasRef = useRef(null);
   const [engine, setEngine] = useState(null);
   const [ballBody, setBallBody] = useState(null);
+  const [isOnGround, setIsOnGround] = useState(false);
 
   useEffect(() => {
     let Engine = Matter.Engine;
@@ -26,33 +28,53 @@ const MainScene = () => {
       engine: newEngine,
       canvas: canvasRef.current,
       options: {
-        width: 300,
+        width: 700,
         height: 300,
-        background: "rgba(255, 0, 0, 0.5)",
+        background: "rgba(0, 0, 0, 0.5)",
         wireframes: false,
       },
     });
 
-    const floor = Bodies.rectangle(150, 300, 300, 20, {
+    const floor = Bodies.rectangle(150, 300, 1100, 20, {
       isStatic: true,
       render: {
-        fillStyle: "blue",
+        fillStyle: "transparent",
       },
     });
 
-    const ball = Bodies.circle(50, 150, 10, {
-      restitution: 0, // force que tu vas te faire renvoyer
+    const ceiling = Bodies.rectangle(150, 10, 1100, 20, {
+      isStatic: true,
+      render: {
+        fillStyle: "transparent",
+      },
+    });
+
+    const ball = Bodies.circle(350, 280, 10, {
+      restitution: 0,
       render: {
         fillStyle: "yellow",
       },
+      label: "ball", // added label for collision detection
     });
 
-    const leftWall = Bodies.rectangle(0, 150, 20, 300, { isStatic: true });
-    const rightWall = Bodies.rectangle(300, 150, 20, 300, { isStatic: true });
+    const leftWall = Bodies.rectangle(10, 150, 20, 320, {
+      isStatic: true,
+      render: {
+        fillStyle: "transparent",
+      },
+    });
+
+    const rightWall = Bodies.rectangle(690, 150, 20, 320, {
+      isStatic: true,
+      render: {
+        fillStyle: "transparent",
+      },
+    });
     setBallBody(ball);
 
     Events.on(newEngine, "collisionStart", (event) => {
       event.pairs.forEach((collision) => {
+        setIsOnGround(true);
         const labels = ["ball", "floor"];
         if (
           labels.includes(collision.bodyA.label) &&
@@ -65,6 +87,7 @@ const MainScene = () => {
     });
 
     Events.on(newEngine, "collisionEnd", (event) => {
+      setIsOnGround(false);
       event.pairs.forEach((collision) => {
         const labels = ["ball", "floor"];
         console.log({ collision });
@@ -77,14 +100,32 @@ const MainScene = () => {
       });
     });
 
-    World.add(newEngine.world, [floor, ball, leftWall, rightWall]);
+    World.add(newEngine.world, [floor, ceiling, ball, leftWall, rightWall]);
 
     Engine.run(newEngine);
     Render.run(render);
+
+    // const handleKeyDown = (event) => {
+    //   if (event.code === "Space" && ballBody && isOnGround) {
+    //     Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.01 });
+    //   }
+    // };
+  
+    // const handleKeyUp = (event) => {
+    //   // handle key up if needed
+    // };
+  
+    // window.addEventListener("keydown", handleKeyDown);
+    // window.addEventListener("keyup", handleKeyUp);
+  
+    // return () => {
+    //   window.removeEventListener("keydown", handleKeyDown);
+    //   window.removeEventListener("keyup", handleKeyUp);
+    // };
   }, []);
 
   const handleJumpClick = () => {
-    if (ballBody) {
+    if (ballBody && isOnGround) { // only jump if the ball is on the ground
       Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.01 });
     }
   };
@@ -93,13 +134,13 @@ const MainScene = () => {
     <div
       ref={boxRef}
       style={{
-        border: "1px solid white",
-        width: 300,
-        height: 300,
+        width: 700,
+        height: 400,
       }}
     >
-      <canvas ref={canvasRef} />
       <button onClick={handleJumpClick}>Jump</button>
+      <canvas ref={canvasRef} />
+      
     </div>
   );
 };
