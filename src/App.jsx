@@ -2,15 +2,17 @@ import "./Mainframe.css";
 import React from "react";
 import MainScene from "./scenes/MainScene";
 import Header from "./components/Header";
-import { Container } from "@chakra-ui/layout";
+import { Container, VStack } from "@chakra-ui/layout";
+import Rules from "./components/Rules";
 
 function App() {
   return (
     <>
       <Header />
-      <Container p={2}>
+      <VStack p={2} gap={3}>
         <MainScene />
-      </Container>
+        <Rules />
+      </VStack>
     </>
   );
 }
