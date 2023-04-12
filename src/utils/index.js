@@ -5,12 +5,16 @@ export const AUDIO_PATH_PLAYER_ARRAY = {
   score: "/audio/score.wav",
 };
 
-export const playAudio = (path, volume = 0.1, audioPassed = undefined) => {
-  const audio = audioPassed ?? new Audio(path);
+export const playAudio = (audio, volume = 0.1) => {
   audio.volume = volume;
   audio.play();
 
-  return audio;
+  audio.onended = () => {
+    audio.currentSrc = null;
+    audio.src = "";
+    audio.srcObject = null;
+    audio.remove();
+  };
 };
 
 export const stopAudio = (audio) => {
