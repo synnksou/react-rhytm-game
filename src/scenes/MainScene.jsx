@@ -4,6 +4,7 @@ import { HStack, VStack } from "@chakra-ui/layout";
 import Score from "../components/Score";
 import { Button } from "@chakra-ui/react";
 import gifBackground from "./../assets/background.gif";
+import { AUDIO_PATH_PLAYER_ARRAY, playAudio, stopAudio } from "../utils";
 
 const MainScene = () => {
   const boxRef = useRef(null);
@@ -12,13 +13,18 @@ const MainScene = () => {
   const [ballBody, setBallBody] = useState(null);
   const [isOnGround, setIsOnGround] = useState(false);
   const [score, setScore] = useState(0);
+  const [prevScore, setPrevScore] = useState(0);
   const [isStarted, toggleIsStarted] = useReducer((state) => !state, false);
   const [speed, setSpeed] = useState(0.005);
+  console.log({ score, prevScore });
+  let scoreGame = 0;
+  const songGame = new Audio(AUDIO_PATH_PLAYER_ARRAY.start);
 
   const handleJumpClick = () => {
     if (ballBody && isOnGround) {
       // only jump if the ball is on the ground
       Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.01 });
+      playAudio(AUDIO_PATH_PLAYER_ARRAY.jump);
     }
   };
 
@@ -37,7 +43,7 @@ const MainScene = () => {
 
     let newEngine = Engine.create({});
     setEngine(newEngine);
-
+    setScore(0);
     let render = Render.create({
       element: boxRef.current,
       engine: newEngine,
@@ -55,6 +61,7 @@ const MainScene = () => {
       render: {
         fillStyle: "transparent",
       },
+      label: "floor",
     });
 
     const ceiling = Bodies.rectangle(640, 10, 1280, 20, {
@@ -62,9 +69,10 @@ const MainScene = () => {
       render: {
         fillStyle: "transparent",
       },
+      label: "ceiling",
     });
 
-    const ball = Bodies.circle(640, 580, 10, {
+    const ball = Bodies.circle(640, 570, 10, {
       restitution: 0,
       render: {
         fillStyle: "yellow",
@@ -95,6 +103,15 @@ const MainScene = () => {
       label: "rectangle",
     });
 
+    const scoreSensor = Bodies.rectangle(640, 450, 200, 5, {
+      isStatic: true,
+      isSensor: true,
+      render: {
+        visible: false,
+      },
+      label: "scoreSensor",
+    });
+
     let velocityX = -5 * 0.5;
     const maxPosX = 1250 - rectangle.width / 2; // maximum x position for the rectangle
     const maxVelocityX = 15; // maximum velocity of the rectangle in x direction
@@ -121,23 +138,23 @@ const MainScene = () => {
       }
 
       // update the velocity of the rectangle based on the direction and speed
-      velocityX = direction * (Math.abs(velocityX) + speed - 10);
+      velocityX = direction * (Math.abs(velocityX) + speed - 5);
     };
 
     setBallBody(ball);
     if (isStarted) {
       Events.on(newEngine, "beforeUpdate", updateRectanglePositionVite);
+      playAudio(AUDIO_PATH_PLAYER_ARRAY.start, 0.1, songGame);
     }
 
     Events.on(newEngine, "collisionStart", (event) => {
       event.pairs.forEach((collision) => {
         setIsOnGround(true);
-        const labels = ["ball", "floor"];
+        const labels = ["ball", "floor", "ceiling"];
         if (
           labels.includes(collision.bodyA.label) &&
           labels.includes(collision.bodyB.label)
         ) {
-          console.log("collisionStart");
           setIsOnGround(true);
         }
       });
@@ -147,7 +164,6 @@ const MainScene = () => {
       setIsOnGround(false);
       event.pairs.forEach((collision) => {
         const labels = ["ball", "floor"];
-        console.log({ collision });
         if (
           labels.includes(collision.bodyA.label) &&
           labels.includes(collision.bodyB.label)
@@ -166,13 +182,26 @@ const MainScene = () => {
           (pair.bodyA.label === "ball" && pair.bodyB.label === "rectangle") ||
           (pair.bodyA.label === "rectangle" && pair.bodyB.label === "ball")
         ) {
-          // Arrêter la simulation
-          console.log("ici ça pete");
           newEngine.timing.timeScale = 0;
-          // Afficher le score
-          setScore(score + 1);
+          setPrevScore(scoreGame);
+          stopAudio(songGame);
+          playAudio(AUDIO_PATH_PLAYER_ARRAY.dead);
         }
       }
+    });
+
+    Events.on(newEngine, "collisionStart", (event) => {
+      event.pairs.forEach((collision) => {
+        const labels = ["ball", "scoreSensor"];
+        if (
+          labels.includes(collision.bodyA.label) &&
+          labels.includes(collision.bodyB.label)
+        ) {
+          // Incrémenter le score
+          scoreGame++;
+          setScore(scoreGame);
+        }
+      });
     });
 
     World.add(newEngine.world, [
@@ -182,16 +211,16 @@ const MainScene = () => {
       leftWall,
       rightWall,
       rectangle,
+      scoreSensor,
     ]);
 
     Engine.run(newEngine);
     Render.run(render);
   }, [isStarted]);
 
-  console.log({ isStarted });
   return (
     <VStack spacing={3} h={"auto"}>
-      <Score score={score} />
+      <Score score={score} prevScore={prevScore} />
       <HStack>
         <Button onKeyUp={handleKeyDown} onClick={handleJumpClick}>
           Jump
