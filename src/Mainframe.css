@@ -1,11 +1,14 @@
 #root {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 2rem;
+  max-width: 100%;
   text-align: center;
+  width: 100%;
+  background-color: #171923;
 }
 
 .Mainframe {
-  width: 700px;
-  height: 300px;
+  width: 1280px;
+  height: 600px;
+  object-fit: contain;
+  background-repeat: no-repeat;
+  background-size:cover ;
 }
