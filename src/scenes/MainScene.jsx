@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useReducer } from "react";
 import Matter from "matter-js";
-
-
-const STATIC_DENSITY = 15;
-const PARTICLE_SIZE = 6;
-const PARTICLE_BOUNCYNESS = 0.9;
+import { HStack, VStack } from "@chakra-ui/layout";
+import Score from "../components/Score";
+import { Button } from "@chakra-ui/react";
+import gifBackground from "./../assets/background.gif";
 
 const MainScene = () => {
   const boxRef = useRef(null);
@@ -12,6 +11,22 @@ const MainScene = () => {
   const [engine, setEngine] = useState(null);
   const [ballBody, setBallBody] = useState(null);
   const [isOnGround, setIsOnGround] = useState(false);
+  const [score, setScore] = useState(0);
+  const [isStarted, toggleIsStarted] = useReducer((state) => !state, false);
+  const [speed, setSpeed] = useState(0.005);
+
+  const handleJumpClick = () => {
+    if (ballBody && isOnGround) {
+      // only jump if the ball is on the ground
+      Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.01 });
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowUp") {
+      handleJumpClick();
+    }
+  };
 
   useEffect(() => {
     let Engine = Matter.Engine;
@@ -28,28 +43,28 @@ const MainScene = () => {
       engine: newEngine,
       canvas: canvasRef.current,
       options: {
-        width: 700,
-        height: 300,
+        width: 1280,
+        height: 600,
         background: "rgba(0, 0, 0, 0.5)",
         wireframes: false,
       },
     });
 
-    const floor = Bodies.rectangle(150, 300, 1100, 20, {
+    const floor = Bodies.rectangle(640, 590, 1280, 20, {
       isStatic: true,
       render: {
         fillStyle: "transparent",
       },
     });
 
-    const ceiling = Bodies.rectangle(150, 10, 1100, 20, {
+    const ceiling = Bodies.rectangle(640, 10, 1280, 20, {
       isStatic: true,
       render: {
         fillStyle: "transparent",
       },
     });
 
-    const ball = Bodies.circle(350, 280, 10, {
+    const ball = Bodies.circle(640, 580, 10, {
       restitution: 0,
       render: {
         fillStyle: "yellow",
@@ -64,13 +79,55 @@ const MainScene = () => {
       },
     });
 
-    const rightWall = Bodies.rectangle(690, 150, 20, 320, {
+    const rightWall = Bodies.rectangle(1270, 150, 20, 320, {
       isStatic: true,
       render: {
         fillStyle: "transparent",
       },
     });
+
+    const rectangle = Bodies.rectangle(1250, 580, 40, 20, {
+      friction: 0,
+      restitution: 0,
+      render: {
+        fillStyle: "blue",
+      },
+      label: "rectangle",
+    });
+
+    let velocityX = -5 * 0.5;
+    const maxPosX = 1250 - rectangle.width / 2; // maximum x position for the rectangle
+    const maxVelocityX = 15; // maximum velocity of the rectangle in x direction
+    const minVelocityX = -15; // minimum velocity of the rectangle in x direction
+    let direction = -1; // direction of the rectangle (1 = right, -1 = left)
+
+    const updateRectanglePositionVite = () => {
+      setSpeed(speed + 0.001);
+      // update the position of the rectangle in each iteration
+      Matter.Body.setVelocity(rectangle, { x: velocityX, y: 0 });
+
+      // update the direction of the rectangle when it reaches the left or right edge
+      if (rectangle.position.x <= 50) {
+        direction = 1; // go right
+      } else if (rectangle.position.x >= 1250) {
+        direction = -1; // go left
+      }
+
+      // limit the velocity of the rectangle
+      if (Math.abs(velocityX) > Math.abs(maxVelocityX)) {
+        velocityX = maxVelocityX;
+      } else if (Math.abs(velocityX) < Math.abs(minVelocityX)) {
+        velocityX = minVelocityX;
+      }
+
+      // update the velocity of the rectangle based on the direction and speed
+      velocityX = direction * (Math.abs(velocityX) + speed - 10);
+    };
+
     setBallBody(ball);
+    if (isStarted) {
+      Events.on(newEngine, "beforeUpdate", updateRectanglePositionVite);
+    }
 
     Events.on(newEngine, "collisionStart", (event) => {
       event.pairs.forEach((collision) => {
@@ -100,48 +157,67 @@ const MainScene = () => {
       });
     });
 
-    World.add(newEngine.world, [floor, ceiling, ball, leftWall, rightWall]);
+    Events.on(newEngine, "collisionStart", (event) => {
+      // Vérifier si la collision est entre la balle et le rectangle
+      let pairs = event.pairs;
+      for (let i = 0; i < pairs.length; i++) {
+        let pair = pairs[i];
+        if (
+          (pair.bodyA.label === "ball" && pair.bodyB.label === "rectangle") ||
+          (pair.bodyA.label === "rectangle" && pair.bodyB.label === "ball")
+        ) {
+          // Arrêter la simulation
+          console.log("ici ça pete");
+          newEngine.timing.timeScale = 0;
+          // Afficher le score
+          setScore(score + 1);
+        }
+      }
+    });
+
+    World.add(newEngine.world, [
+      floor,
+      ceiling,
+      ball,
+      leftWall,
+      rightWall,
+      rectangle,
+    ]);
 
     Engine.run(newEngine);
     Render.run(render);
+  }, [isStarted]);
 
-    // const handleKeyDown = (event) => {
-    //   if (event.code === "Space" && ballBody && isOnGround) {
-    //     Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.01 });
-    //   }
-    // };
-  
-    // const handleKeyUp = (event) => {
-    //   // handle key up if needed
-    // };
-  
-    // window.addEventListener("keydown", handleKeyDown);
-    // window.addEventListener("keyup", handleKeyUp);
-  
-    // return () => {
-    //   window.removeEventListener("keydown", handleKeyDown);
-    //   window.removeEventListener("keyup", handleKeyUp);
-    // };
-  }, []);
-
-  const handleJumpClick = () => {
-    if (ballBody && isOnGround) { // only jump if the ball is on the ground
-      Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.01 });
-    }
-  };
-
+  console.log({ isStarted });
   return (
-    <div
-      ref={boxRef}
-      style={{
-        width: 700,
-        height: 400,
-      }}
-    >
-      <button onClick={handleJumpClick}>Jump</button>
-      <canvas ref={canvasRef} />
-      
-    </div>
+    <VStack spacing={3} h={"auto"}>
+      <Score score={score} />
+      <HStack>
+        <Button onKeyUp={handleKeyDown} onClick={handleJumpClick}>
+          Jump
+        </Button>
+        <Button onKeyUp={handleKeyDown} onClick={toggleIsStarted}>
+          Start
+        </Button>
+      </HStack>
+      <div
+        className="Mainframe"
+        style={{
+          backgroundImage: `url(${gifBackground})`,
+          objectFit: "strech",
+        }}
+      >
+        <div
+          ref={boxRef}
+          style={{
+            width: 1280,
+            height: 600,
+          }}
+        >
+          <canvas ref={canvasRef} />
+        </div>
+      </div>
+    </VStack>
   );
 };
 
