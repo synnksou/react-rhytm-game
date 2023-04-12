@@ -19,13 +19,15 @@ const MainScene = () => {
   const [prevScore, setPrevScore] = useState(0);
   const [isStarted, toggleIsStarted] = useReducer((state) => !state, false);
   const [speed, setSpeed] = useState(0.005);
+  const [spriteImage, setSpriteImage] = useState();
+
+  let skaterTexture = new Image();
+  skaterTexture.src = "skater_normal.gif";
+
+  let skaterJumpTexture = new Image();
+  skaterJumpTexture.src = "skater_jump.gif";
 
   let scoreGame = 0;
-  /*
-  const songGame = new Audio(AUDIO_PATH_PLAYER_ARRAY.start);
-  const jumpSound = new Audio(AUDIO_PATH_PLAYER_ARRAY.jump);
-  const gameOverSound = new Audio(AUDIO_PATH_PLAYER_ARRAY.dead);
-*/
 
   const songGame = new Howl({
     src: [AUDIO_PATH_PLAYER_ARRAY.start],
@@ -46,10 +48,19 @@ const MainScene = () => {
   });
 
   const handleJumpClick = () => {
-    if (ballBody && isOnGround) {
-      // only jump if the ball is on the ground
-      Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.01 });
-      jumpSound.play();
+    console.log(isOnGround);
+    if (ballBody) {
+      if (isOnGround) {
+        //const newSprite = Object.assign({}, spriteImage);
+        //newSprite.texture = skaterJumpTexture;
+
+        ballBody.render.sprite.texture = skaterJumpTexture.src;
+        Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.1 });
+
+        jumpSound.play();
+      } else {
+        ballBody.render.sprite.texture = skaterTexture.src;
+      }
     }
   };
 
@@ -96,14 +107,27 @@ const MainScene = () => {
       },
       label: "ceiling",
     });
-
-    const ball = Bodies.circle(640, 570, 10, {
-      restitution: 0,
+    /**
+     *  sprite: {
+          texture: "skater_normal.gif",
+          xScale: 3.5,
+          yScale: 3.5,
+        },
+     */
+    let ball = Bodies.rectangle(640, 580, 40, 80, {
+      restitution: 0.1,
       render: {
         fillStyle: "yellow",
+        sprite: {
+          texture: skaterTexture.src,
+          xScale: 3.5,
+          yScale: 3.5,
+        },
       },
       label: "ball", // added label for collision detection
     });
+
+    setSpriteImage(ball.render.sprite.texture);
 
     const leftWall = Bodies.rectangle(10, 150, 20, 320, {
       isStatic: true,
@@ -119,11 +143,15 @@ const MainScene = () => {
       },
     });
 
-    const rectangle = Bodies.rectangle(1250, 580, 40, 20, {
+    const rectangle = Bodies.rectangle(1200, 580, 40, 100, {
       friction: 0,
-      restitution: 0,
       render: {
         fillStyle: "blue",
+        sprite: {
+          texture: "car.png",
+          xScale: 2,
+          yScale: 2,
+        },
       },
       label: "rectangle",
     });
@@ -138,7 +166,6 @@ const MainScene = () => {
     });
 
     let velocityX = -5 * 0.5;
-    const maxPosX = 1250 - rectangle.width / 2; // maximum x position for the rectangle
     const maxVelocityX = 15; // maximum velocity of the rectangle in x direction
     const minVelocityX = -15; // minimum velocity of the rectangle in x direction
     let direction = -1; // direction of the rectangle (1 = right, -1 = left)
@@ -151,8 +178,10 @@ const MainScene = () => {
       // update the direction of the rectangle when it reaches the left or right edge
       if (rectangle.position.x <= 50) {
         direction = 1; // go right
+        rectangle.render.sprite.texture = "car_right.png";
       } else if (rectangle.position.x >= 1250) {
         direction = -1; // go left
+        rectangle.render.sprite.texture = "car.png";
       }
 
       // limit the velocity of the rectangle
@@ -167,8 +196,8 @@ const MainScene = () => {
     };
 
     setBallBody(ball);
+
     if (isStarted) {
-      console.log("ici on est deux nan lol ? ");
       Events.on(newEngine, "beforeUpdate", updateRectanglePositionVite);
       songGame.play();
     }
@@ -190,6 +219,7 @@ const MainScene = () => {
       setIsOnGround(false);
       event.pairs.forEach((collision) => {
         const labels = ["ball", "floor"];
+
         if (
           labels.includes(collision.bodyA.label) &&
           labels.includes(collision.bodyB.label)
@@ -211,10 +241,8 @@ const MainScene = () => {
           newEngine.timing.timeScale = 0;
           setPrevScore(scoreGame);
 
-          //songGame.stop();
           gameOverSound.play();
           songGame.stop();
-          songGame?.unloadAsync();
         }
       }
     });
