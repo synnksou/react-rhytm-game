@@ -5,6 +5,9 @@ import Score from "../components/Score";
 import { Button } from "@chakra-ui/react";
 import gifBackground from "./../assets/background.gif";
 import { AUDIO_PATH_PLAYER_ARRAY, playAudio, stopAudio } from "../utils";
+import { Howl } from "howler";
+
+const VOLUME = 0.1;
 
 const MainScene = () => {
   const boxRef = useRef(null);
@@ -16,15 +19,37 @@ const MainScene = () => {
   const [prevScore, setPrevScore] = useState(0);
   const [isStarted, toggleIsStarted] = useReducer((state) => !state, false);
   const [speed, setSpeed] = useState(0.005);
-  console.log({ score, prevScore });
+
   let scoreGame = 0;
+  /*
   const songGame = new Audio(AUDIO_PATH_PLAYER_ARRAY.start);
+  const jumpSound = new Audio(AUDIO_PATH_PLAYER_ARRAY.jump);
+  const gameOverSound = new Audio(AUDIO_PATH_PLAYER_ARRAY.dead);
+*/
+
+  const songGame = new Howl({
+    src: [AUDIO_PATH_PLAYER_ARRAY.start],
+    volume: VOLUME,
+    onplayerror: function (e) {
+      console.log("play error", e);
+    },
+  });
+
+  const jumpSound = new Howl({
+    src: [AUDIO_PATH_PLAYER_ARRAY.jump],
+    volume: VOLUME,
+  });
+
+  const gameOverSound = new Howl({
+    src: [AUDIO_PATH_PLAYER_ARRAY.dead],
+    volume: VOLUME,
+  });
 
   const handleJumpClick = () => {
     if (ballBody && isOnGround) {
       // only jump if the ball is on the ground
       Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.01 });
-      playAudio(AUDIO_PATH_PLAYER_ARRAY.jump);
+      jumpSound.play();
     }
   };
 
@@ -40,8 +65,8 @@ const MainScene = () => {
     let World = Matter.World;
     let Bodies = Matter.Bodies;
     let Events = Matter.Events;
-
     let newEngine = Engine.create({});
+
     setEngine(newEngine);
     setScore(0);
     let render = Render.create({
@@ -143,8 +168,9 @@ const MainScene = () => {
 
     setBallBody(ball);
     if (isStarted) {
+      console.log("ici on est deux nan lol ? ");
       Events.on(newEngine, "beforeUpdate", updateRectanglePositionVite);
-      playAudio(AUDIO_PATH_PLAYER_ARRAY.start, 0.1, songGame);
+      songGame.play();
     }
 
     Events.on(newEngine, "collisionStart", (event) => {
@@ -184,8 +210,11 @@ const MainScene = () => {
         ) {
           newEngine.timing.timeScale = 0;
           setPrevScore(scoreGame);
-          stopAudio(songGame);
-          playAudio(AUDIO_PATH_PLAYER_ARRAY.dead);
+
+          //songGame.stop();
+          gameOverSound.play();
+          songGame.stop();
+          songGame?.unloadAsync();
         }
       }
     });
@@ -214,7 +243,12 @@ const MainScene = () => {
       scoreSensor,
     ]);
 
-    Engine.run(newEngine);
+    function update() {
+      Engine.update(newEngine);
+      window.requestAnimationFrame(update);
+    }
+
+    update();
     Render.run(render);
   }, [isStarted]);
 
