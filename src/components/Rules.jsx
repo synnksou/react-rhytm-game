@@ -4,7 +4,7 @@ import React from "react";
 const Rules = () => {
   return (
     <VStack spacing={2}>
-      <Heading color="white">Rêglès</Heading>
+      <Heading color="white">Règles</Heading>
       <Text color="white" fontSize="2l">
         Le but est simple, il suffit de cliquer sur le bouton "Start" pour
         lancer, ensuite "Jump" pour jouer.
@@ -14,7 +14,7 @@ const Rules = () => {
         augmente en fonction du temps passé en l'air.
       </Text>
       <Text color="white" fontSize="2l">
-        Vous pouvez faire des doubles jumps avec un timming précis.
+       La voiture change régulièrement de vitesse, ne vous laissez pas surprendre!
       </Text>
       <Text color="white" fontSize="2l">
         Bonne chance !
