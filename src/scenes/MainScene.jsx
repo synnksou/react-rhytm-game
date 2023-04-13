@@ -69,20 +69,27 @@ const MainScene = () => {
 
   const handleClickCounter = () => {
     if (count === 5 && !isStarted) {
+      //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
       let timer = setInterval(() => {
         setCount((prevCount) => {
+          //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
           let newCount = prevCount - 1;
           console.log({ newCount });
           if (newCount >= 2) {
+            document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
             countSound.play();
           }
           console.log(newCount);
           if (newCount === 1) {
+            countSound.play()
             readySound.play();
           }
           if (newCount === 0) {
+            countSound.play()
             goSound.play();
+            
           }
+          //document.querySelector("button.chakra-button:nth-child(3)").removeAttribute("disabled");
           return newCount;
         });
       }, 1000);
@@ -94,6 +101,7 @@ const MainScene = () => {
       }, 5000);
     } else {
       toggleIsStarted();
+      
     }
   };
 
