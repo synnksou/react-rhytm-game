@@ -131,7 +131,7 @@ const MainScene = () => {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "ArrowUp") {
+    if (e.key === "Shift") {
       handleJumpClick();
     }
   };
@@ -375,6 +375,7 @@ const MainScene = () => {
           <canvas ref={canvasRef} />
         </div>
       </div>
+      <script>document.addEventListener("keydown", handleKeyDown);</script>
     </VStack>
   );
 };
