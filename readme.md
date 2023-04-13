@@ -1,6 +1,6 @@
 # React-rythm-skater-game
 
-Live in [Rythm-Skater](https://graceful-meerkat-2e2334.netlify.app)
+Live in [Rythm-Skater](https://rythm-skater-jump.netlify.app)
 
 ## Description
 
