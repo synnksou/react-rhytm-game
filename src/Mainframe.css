@@ -3,7 +3,8 @@
   text-align: center;
   width: 100%;
   background-color: #171923;
-  height: 100vh;
+  min-height: 100vh;
+  height: 100%;
 }
 
 .Mainframe {

@@ -3,6 +3,9 @@ export const AUDIO_PATH_PLAYER_ARRAY = {
   dead: "/audio/mort.wav",
   start: "/audio/song.mp3",
   score: "/audio/score.wav",
+  go: "/audio/go.wav",
+  ready: "/audio/ready.wav",
+  countDown: "/audio/countdown.wav",
 };
 
 export const playAudio = (audio, volume = 0.1) => {
