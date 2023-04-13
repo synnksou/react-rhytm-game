@@ -240,7 +240,7 @@ const MainScene = () => {
     const minVelocityX = -13; // minimum velocity of the rectangle in x direction
     let direction = -1; // direction of the rectangle (1 = right, -1 = left)
     const maxSpeed = 10; // maximum speed of the rectangle
-
+    const minSpeed = 0; // minimum speed of the rectangle
     const updateRectanglePositionVite = () => {
       speed+=(Math.random() * (1 - -1) + -1)+.02
       //console.log("speed",speed)
@@ -266,6 +266,9 @@ const MainScene = () => {
       //limit the speed of the rectangle
       if (speed > maxSpeed) {
         speed = maxSpeed;
+      }
+      if (speed < minSpeed) {
+        speed = minSpeed;
       }
 
       // update the velocity of the rectangle based on the direction and speed
