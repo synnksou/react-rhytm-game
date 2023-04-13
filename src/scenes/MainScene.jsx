@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState, useReducer } from "react";
 import Matter from "matter-js";
-import { HStack, VStack } from "@chakra-ui/layout";
+import { HStack, Text, VStack } from "@chakra-ui/layout";
 import Score from "../components/Score";
-import { Button } from "@chakra-ui/react";
+import { Button, useDisclosure } from "@chakra-ui/react";
 import gifBackground from "./../assets/background.gif";
 import { AUDIO_PATH_PLAYER_ARRAY, playAudio, stopAudio } from "../utils";
 import { Howl } from "howler";
-
+import ModalUser from "../components/Modal";
+import { useMutation } from "react-query";
+import { postScore } from "../api/score";
+import { client } from "../api/base";
 const VOLUME = 0.1;
 
 const MainScene = () => {
@@ -20,6 +23,8 @@ const MainScene = () => {
   const [isStarted, toggleIsStarted] = useReducer((state) => !state, false);
   const [speed, setSpeed] = useState(0.005);
   const [spriteImage, setSpriteImage] = useState();
+  const [count, setCount] = useState(5);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   let skaterTexture = new Image();
   skaterTexture.src = "skater_normal.gif";
@@ -47,13 +52,55 @@ const MainScene = () => {
     volume: VOLUME,
   });
 
+  const countSound = new Howl({
+    src: [AUDIO_PATH_PLAYER_ARRAY.countDown],
+    volume: VOLUME,
+  });
+
+  const readySound = new Howl({
+    src: [AUDIO_PATH_PLAYER_ARRAY.ready],
+    volume: VOLUME,
+  });
+
+  const goSound = new Howl({
+    src: [AUDIO_PATH_PLAYER_ARRAY.go],
+    volume: VOLUME,
+  });
+
+  const handleClickCounter = () => {
+    if (count === 5 && !isStarted) {
+      let timer = setInterval(() => {
+        setCount((prevCount) => {
+          let newCount = prevCount - 1;
+          console.log({ newCount });
+          if (newCount >= 2) {
+            countSound.play();
+          }
+          console.log(newCount);
+          if (newCount === 1) {
+            readySound.play();
+          }
+          if (newCount === 0) {
+            goSound.play();
+          }
+          return newCount;
+        });
+      }, 1000);
+
+      setTimeout(() => {
+        clearInterval(timer);
+        setCount(0);
+        toggleIsStarted();
+      }, 5000);
+    } else {
+      toggleIsStarted();
+    }
+  };
+
   const handleJumpClick = () => {
     console.log(isOnGround);
     if (ballBody) {
       if (isOnGround) {
-        //const newSprite = Object.assign({}, spriteImage);
-        //newSprite.texture = skaterJumpTexture;
-
         ballBody.render.sprite.texture = skaterJumpTexture.src;
         Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.1 });
 
@@ -62,6 +109,25 @@ const MainScene = () => {
         ballBody.render.sprite.texture = skaterTexture.src;
       }
     }
+  };
+
+  const { mutateAsync: mutateScore } = useMutation(
+    (score) => client.post("/insertUser", score),
+    {
+      onSuccess: () => {
+        console.log("success");
+      },
+      onError: () => {
+        console.log("error");
+      },
+    }
+  );
+
+  const submitScore = async () => {
+    await mutateScore({
+      username: JSON.parse(localStorage.getItem("name")) || "Anonymous",
+      score: scoreGame,
+    });
   };
 
   const handleKeyDown = (e) => {
@@ -107,13 +173,7 @@ const MainScene = () => {
       },
       label: "ceiling",
     });
-    /**
-     *  sprite: {
-          texture: "skater_normal.gif",
-          xScale: 3.5,
-          yScale: 3.5,
-        },
-     */
+
     let ball = Bodies.rectangle(640, 580, 40, 80, {
       restitution: 0.1,
       render: {
@@ -240,9 +300,11 @@ const MainScene = () => {
         ) {
           newEngine.timing.timeScale = 0;
           setPrevScore(scoreGame);
+          songGame.stop();
 
           gameOverSound.play();
-          songGame.stop();
+          submitScore();
+          setCount(5);
         }
       }
     });
@@ -282,13 +344,18 @@ const MainScene = () => {
 
   return (
     <VStack spacing={3} h={"auto"}>
+      <ModalUser onOpen={onOpen} onClose={onClose} isOpen={isOpen} />
       <Score score={score} prevScore={prevScore} />
+      <Text color={count > 1 ? "white" : "green"}>
+        Compte a rebours : {count}
+      </Text>
       <HStack>
+        <Button onClick={onOpen}>Pesudo</Button>
         <Button onKeyUp={handleKeyDown} onClick={handleJumpClick}>
           Jump
         </Button>
-        <Button onKeyUp={handleKeyDown} onClick={toggleIsStarted}>
-          Start
+        <Button onKeyUp={handleKeyDown} onClick={handleClickCounter}>
+          {isStarted ? "Stop" : "Start"}
         </Button>
       </HStack>
       <div

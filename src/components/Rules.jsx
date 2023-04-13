@@ -4,7 +4,7 @@ import React from "react";
 const Rules = () => {
   return (
     <VStack spacing={2}>
-      <Heading color="white">Rêgles</Heading>
+      <Heading color="white">Rêglès</Heading>
       <Text color="white" fontSize="2l">
         Le but est simple, il suffit de cliquer sur le bouton "Start" pour
         lancer, ensuite "Jump" pour jouer.
