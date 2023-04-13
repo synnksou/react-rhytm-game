@@ -38,7 +38,7 @@ const MainScene = () => {
     src: [AUDIO_PATH_PLAYER_ARRAY.start],
     volume: VOLUME,
     onplayerror: function (e) {
-      console.log("play error", e);
+      "play error", e;
     },
   });
 
@@ -74,12 +74,12 @@ const MainScene = () => {
         setCount((prevCount) => {
           //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
           let newCount = prevCount - 1;
-          console.log({ newCount });
+          ({ newCount });
           if (newCount >= 2) {
             document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
             countSound.play();
           }
-          console.log(newCount);
+          newCount;
           if (newCount === 1) {
             countSound.play()
             readySound.play();
@@ -368,7 +368,11 @@ const MainScene = () => {
         <Button onKeyUp={handleKeyDown} onClick={handleJumpClick}>
           Jump
         </Button>
-        <Button onKeyUp={handleKeyDown} onClick={handleClickCounter}>
+        <Button
+          onKeyUp={handleKeyDown}
+          onClick={handleClickCounter}
+          disabled={count > 0 && isStarted}
+        >
           {isStarted ? "Stop" : "Start"}
         </Button>
       </HStack>
