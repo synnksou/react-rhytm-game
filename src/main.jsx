@@ -5,6 +5,7 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
+import Scoreboard from "./pages/Scoreboard";
 
 const router = createBrowserRouter([
   {
@@ -13,7 +14,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/scoreboard",
-    element: <div>ScoreBoard</div>,
+    element: <Scoreboard />,
   },
 ]);
 

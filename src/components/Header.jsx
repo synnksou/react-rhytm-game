@@ -63,13 +63,13 @@ function Header() {
       >
         <HStack align="center">
           <Icon as={MdHome} />
-          <Link href="/" fontSize="lg">
+          <Link to="/" fontSize="lg">
             Home
           </Link>
         </HStack>
         <HStack align="center">
           <Icon as={MdScoreboard} />
-          <Link href="/scoreboard" fontSize="lg">
+          <Link to="/scoreboard" fontSize="lg">
             Scoreboard
           </Link>
         </HStack>
