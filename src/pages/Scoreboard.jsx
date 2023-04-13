@@ -3,14 +3,14 @@ import bgImg from "./../assets/logo_leaderboard.png";
 import Header from "../components/Header";
 import "./../scoreboard.css";
 
-const baseurl = "http://localhost:3000/";
+const baseurl = "https://rhythmgame-api.onrender.com/";
 const Scoreboard = () => {
   const [score, setScore] = useState([]);
   useEffect(() => {
     fetchScores();
   }, []);
   const fetchScores = () => {
-    fetch(baseurl + "score")
+    fetch(baseurl + "users")
       .then((res) => {
         if (!res.ok) {
           throw new Error("Network response was not ok");
@@ -41,7 +41,7 @@ const Scoreboard = () => {
             {score.map((s, index) => (
               <tr key={index+1}>
                 <td>{index + 1}</td>
-                <td>{s.user}</td>
+                <td>{s.username}</td>
                 <td>{s.score}</td>
               </tr>
             ))}
