@@ -69,17 +69,17 @@ const MainScene = () => {
 
   const handleClickCounter = () => {
     if (count === 5 && !isStarted) {
-      //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
+      document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
       let timer = setInterval(() => {
         setCount((prevCount) => {
           //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
           let newCount = prevCount - 1;
-          console.log({ newCount });
+          //console.log({ newCount });
           if (newCount >= 2) {
             //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
             countSound.play();
           }
-          console.log(newCount);
+          //console.log(newCount);
           if (newCount === 1) {
             countSound.play()
             readySound.play();
@@ -89,7 +89,6 @@ const MainScene = () => {
             goSound.play();
             
           }
-          //document.querySelector("button.chakra-button:nth-child(3)").removeAttribute("disabled");
           return newCount;
         });
       }, 1000);
@@ -98,15 +97,16 @@ const MainScene = () => {
         clearInterval(timer);
         setCount(0);
         toggleIsStarted();
+        document.querySelector("button.chakra-button:nth-child(3)").removeAttribute("disabled");
       }, 5000);
     } else {
       toggleIsStarted();
-      
+      document.querySelector("button.chakra-button:nth-child(3)").removeAttribute("disabled");
     }
   };
 
   const handleJumpClick = () => {
-    console.log(isOnGround);
+    //console.log(isOnGround);
     if(!isStarted) return
     if (ballBody) {
       if (isOnGround) {
@@ -236,12 +236,14 @@ const MainScene = () => {
     });
 
     let velocityX = -5 * 0.5;
-    const maxVelocityX = 15; // maximum velocity of the rectangle in x direction
-    const minVelocityX = -15; // minimum velocity of the rectangle in x direction
+    const maxVelocityX = 13; // maximum velocity of the rectangle in x direction
+    const minVelocityX = -13; // minimum velocity of the rectangle in x direction
     let direction = -1; // direction of the rectangle (1 = right, -1 = left)
+    const maxSpeed = 10; // maximum speed of the rectangle
 
     const updateRectanglePositionVite = () => {
-      speed+=.001
+      speed+=(Math.random() * (1 - -1) + -1)+.02
+      //console.log("speed",speed)
       // update the position of the rectangle in each iteration
       Matter.Body.setVelocity(rectangle, { x: velocityX, y: 0 });
 
@@ -259,6 +261,11 @@ const MainScene = () => {
         velocityX = maxVelocityX;
       } else if (Math.abs(velocityX) < Math.abs(minVelocityX)) {
         velocityX = minVelocityX;
+      }
+
+      //limit the speed of the rectangle
+      if (speed > maxSpeed) {
+        speed = maxSpeed;
       }
 
       // update the velocity of the rectangle based on the direction and speed
