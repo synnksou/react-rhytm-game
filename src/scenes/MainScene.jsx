@@ -374,7 +374,7 @@ const MainScene = () => {
         Compte a rebours : {count}
       </Text>
       <HStack>
-        <Button onClick={onOpen}>Pesudo</Button>
+        <Button onClick={onOpen}>Pseudo</Button>
         <Button onKeyUp={handleKeyDown} onClick={handleJumpClick}>
           Jump
         </Button>
