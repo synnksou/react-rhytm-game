@@ -21,7 +21,7 @@ const MainScene = () => {
   const [score, setScore] = useState(0);
   const [prevScore, setPrevScore] = useState(0);
   const [isStarted, toggleIsStarted] = useReducer((state) => !state, false);
-  const [speed, setSpeed] = useState(0.005);
+  let [speed, setSpeed] = useState(0.005);
   const [spriteImage, setSpriteImage] = useState();
   const [count, setCount] = useState(5);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -69,20 +69,27 @@ const MainScene = () => {
 
   const handleClickCounter = () => {
     if (count === 5 && !isStarted) {
+      //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
       let timer = setInterval(() => {
         setCount((prevCount) => {
+          //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
           let newCount = prevCount - 1;
           console.log({ newCount });
           if (newCount >= 2) {
+            document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
             countSound.play();
           }
           console.log(newCount);
           if (newCount === 1) {
+            countSound.play()
             readySound.play();
           }
           if (newCount === 0) {
+            countSound.play()
             goSound.play();
+            
           }
+          //document.querySelector("button.chakra-button:nth-child(3)").removeAttribute("disabled");
           return newCount;
         });
       }, 1000);
@@ -94,19 +101,21 @@ const MainScene = () => {
       }, 5000);
     } else {
       toggleIsStarted();
+      
     }
   };
 
   const handleJumpClick = () => {
-    isOnGround;
+    console.log(isOnGround);
+    if(!isStarted) return
     if (ballBody) {
       if (isOnGround) {
-        ballBody.render.sprite.texture = skaterJumpTexture.src;
-        Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.1 });
-
+        //ballBody.render.sprite.texture = skaterJumpTexture.src;
+        Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.15 });
+        
         jumpSound.play();
       } else {
-        ballBody.render.sprite.texture = skaterTexture.src;
+        //ballBody.render.sprite.texture = skaterTexture.src;
       }
     }
   };
@@ -131,7 +140,8 @@ const MainScene = () => {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "ArrowUp") {
+    
+    if (e.key === "Shift") {
       handleJumpClick();
     }
   };
@@ -226,12 +236,12 @@ const MainScene = () => {
     });
 
     let velocityX = -5 * 0.5;
-    const maxVelocityX = 15; // maximum velocity of the rectangle in x direction
+    const maxVelocityX = 150; // maximum velocity of the rectangle in x direction
     const minVelocityX = -15; // minimum velocity of the rectangle in x direction
     let direction = -1; // direction of the rectangle (1 = right, -1 = left)
 
     const updateRectanglePositionVite = () => {
-      setSpeed(speed + 0.001);
+      speed+=.008
       // update the position of the rectangle in each iteration
       Matter.Body.setVelocity(rectangle, { x: velocityX, y: 0 });
 
@@ -252,7 +262,7 @@ const MainScene = () => {
       }
 
       // update the velocity of the rectangle based on the direction and speed
-      velocityX = direction * (Math.abs(velocityX) + speed - 5);
+      velocityX = direction * (Math.abs(velocityX) + speed*.5 - 5);
     };
 
     setBallBody(ball);
@@ -267,10 +277,14 @@ const MainScene = () => {
         setIsOnGround(true);
         const labels = ["ball", "floor", "ceiling"];
         if (
-          labels.includes(collision.bodyA.label) &&
-          labels.includes(collision.bodyB.label)
-        ) {
+          Matter.Collision.collides(ball, floor)!==null
+          ) 
+         {
           setIsOnGround(true);
+          ball.render.sprite.texture = skaterTexture.src;
+        }else{
+          setIsOnGround(false);
+          ball.render.sprite.texture = skaterJumpTexture.src;
         }
       });
     });
@@ -375,6 +389,7 @@ const MainScene = () => {
           <canvas ref={canvasRef} />
         </div>
       </div>
+      <script>document.addEventListener("keydown", handleKeyDown);</script>
     </VStack>
   );
 };
