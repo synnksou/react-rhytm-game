@@ -38,7 +38,7 @@ const MainScene = () => {
     src: [AUDIO_PATH_PLAYER_ARRAY.start],
     volume: VOLUME,
     onplayerror: function (e) {
-      console.log("play error", e);
+      "play error", e;
     },
   });
 
@@ -72,11 +72,11 @@ const MainScene = () => {
       let timer = setInterval(() => {
         setCount((prevCount) => {
           let newCount = prevCount - 1;
-          console.log({ newCount });
+          ({ newCount });
           if (newCount >= 2) {
             countSound.play();
           }
-          console.log(newCount);
+          newCount;
           if (newCount === 1) {
             readySound.play();
           }
@@ -98,7 +98,7 @@ const MainScene = () => {
   };
 
   const handleJumpClick = () => {
-    console.log(isOnGround);
+    isOnGround;
     if (ballBody) {
       if (isOnGround) {
         ballBody.render.sprite.texture = skaterJumpTexture.src;
@@ -354,7 +354,11 @@ const MainScene = () => {
         <Button onKeyUp={handleKeyDown} onClick={handleJumpClick}>
           Jump
         </Button>
-        <Button onKeyUp={handleKeyDown} onClick={handleClickCounter}>
+        <Button
+          onKeyUp={handleKeyDown}
+          onClick={handleClickCounter}
+          disabled={count > 0 && isStarted}
+        >
           {isStarted ? "Stop" : "Start"}
         </Button>
       </HStack>
