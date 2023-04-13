@@ -236,12 +236,12 @@ const MainScene = () => {
     });
 
     let velocityX = -5 * 0.5;
-    const maxVelocityX = 150; // maximum velocity of the rectangle in x direction
+    const maxVelocityX = 15; // maximum velocity of the rectangle in x direction
     const minVelocityX = -15; // minimum velocity of the rectangle in x direction
     let direction = -1; // direction of the rectangle (1 = right, -1 = left)
 
     const updateRectanglePositionVite = () => {
-      speed+=.008
+      speed+=.001
       // update the position of the rectangle in each iteration
       Matter.Body.setVelocity(rectangle, { x: velocityX, y: 0 });
 
