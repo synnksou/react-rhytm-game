@@ -21,7 +21,7 @@ const MainScene = () => {
   const [score, setScore] = useState(0);
   const [prevScore, setPrevScore] = useState(0);
   const [isStarted, toggleIsStarted] = useReducer((state) => !state, false);
-  const [speed, setSpeed] = useState(0.005);
+  let [speed, setSpeed] = useState(0.005);
   const [spriteImage, setSpriteImage] = useState();
   const [count, setCount] = useState(5);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -99,14 +99,15 @@ const MainScene = () => {
 
   const handleJumpClick = () => {
     console.log(isOnGround);
+    if(!isStarted) return
     if (ballBody) {
       if (isOnGround) {
-        ballBody.render.sprite.texture = skaterJumpTexture.src;
-        Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.1 });
-
+        //ballBody.render.sprite.texture = skaterJumpTexture.src;
+        Matter.Body.applyForce(ballBody, ballBody.position, { x: 0, y: -0.15 });
+        
         jumpSound.play();
       } else {
-        ballBody.render.sprite.texture = skaterTexture.src;
+        //ballBody.render.sprite.texture = skaterTexture.src;
       }
     }
   };
@@ -131,6 +132,7 @@ const MainScene = () => {
   };
 
   const handleKeyDown = (e) => {
+    
     if (e.key === "Shift") {
       handleJumpClick();
     }
@@ -226,12 +228,12 @@ const MainScene = () => {
     });
 
     let velocityX = -5 * 0.5;
-    const maxVelocityX = 15; // maximum velocity of the rectangle in x direction
+    const maxVelocityX = 150; // maximum velocity of the rectangle in x direction
     const minVelocityX = -15; // minimum velocity of the rectangle in x direction
     let direction = -1; // direction of the rectangle (1 = right, -1 = left)
 
     const updateRectanglePositionVite = () => {
-      setSpeed(speed + 0.001);
+      speed+=.008
       // update the position of the rectangle in each iteration
       Matter.Body.setVelocity(rectangle, { x: velocityX, y: 0 });
 
@@ -252,7 +254,7 @@ const MainScene = () => {
       }
 
       // update the velocity of the rectangle based on the direction and speed
-      velocityX = direction * (Math.abs(velocityX) + speed - 5);
+      velocityX = direction * (Math.abs(velocityX) + speed*.5 - 5);
     };
 
     setBallBody(ball);
@@ -267,10 +269,14 @@ const MainScene = () => {
         setIsOnGround(true);
         const labels = ["ball", "floor", "ceiling"];
         if (
-          labels.includes(collision.bodyA.label) &&
-          labels.includes(collision.bodyB.label)
-        ) {
+          Matter.Collision.collides(ball, floor)!==null
+          ) 
+         {
           setIsOnGround(true);
+          ball.render.sprite.texture = skaterTexture.src;
+        }else{
+          setIsOnGround(false);
+          ball.render.sprite.texture = skaterJumpTexture.src;
         }
       });
     });
