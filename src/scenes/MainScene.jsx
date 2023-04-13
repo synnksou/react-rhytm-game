@@ -76,7 +76,7 @@ const MainScene = () => {
           let newCount = prevCount - 1;
           console.log({ newCount });
           if (newCount >= 2) {
-            document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
+            //document.querySelector("button.chakra-button:nth-child(3)").setAttribute("disabled", "disabled");
             countSound.play();
           }
           console.log(newCount);
