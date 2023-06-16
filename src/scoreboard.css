@@ -12,6 +12,9 @@
   align-items: center;
   padding-bottom: 5%;
 }
+.scoreboard-contents {
+  align-items: flex-start;
+}
 
 .bg-img {
   margin-bottom: 20px;
