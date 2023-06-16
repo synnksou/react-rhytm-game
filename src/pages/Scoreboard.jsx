@@ -28,7 +28,7 @@ const Scoreboard = () => {
             <Spinner />{" "}
           </>
         ) : (
-          <HStack spacing={3} align="center">
+          <HStack spacing={3} align="center"className="scoreboard-contents">
             <VStack spacing={2} gap={2}>
               <Image
                 boxSize="100px"
